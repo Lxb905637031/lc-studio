@@ -1,0 +1,21 @@
+{
+    "name": "@lc-studio/layout-engine",
+    "version": "1.0.0",
+    "description": "",
+    "type": "module",
+    "main": "dist/cjs/index.js",
+    "module": "dist/esm/index.mjs",
+    "types": "dist/esm/index.d.ts",
+    "scripts": {
+        "build:watch": "tsup --watch",
+        "build": "tsup",
+        "clean": "rimraf build",
+        "typecheck": "tsc --noEmit"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "peerDependencies": {
+        "react": "^18.0.0"
+    }
+}
