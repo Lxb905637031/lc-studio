@@ -1,0 +1,66 @@
+{
+    "name": "lc-studio",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "lint": "eslint",
+        "lint:staged": "lint-staged",
+        "prepare": "husky",
+        "commit": "git-cz"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Lxb905637031/lc-studio.git"
+    },
+    "config": {
+        "commitizen": {
+            "path": "node_modules/cz-git"
+        }
+    },
+    "lint-staged": {
+        "*.{md,json}": [
+            "prettier --cache --write --no-error-on-unmatched-pattern"
+        ],
+        "*.{css,less}": [
+            "prettier --cache --write"
+        ],
+        "*.{js,jsx}": [
+            "eslint --fix",
+            "prettier --cache --write"
+        ],
+        "*.{ts,tsx}": [
+            "eslint --fix",
+            "prettier --cache --parser=typescript --write"
+        ]
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@types/node": "22.9.0",
+        "eslint": "9.14.0",
+        "@eslint/js": "9.14.0",
+        "globals": "15.12.0",
+        "typescript": "5.6.3",
+        "typescript-eslint": "8.13.0",
+        "eslint-plugin-react-refresh": "0.4.14",
+        "eslint-plugin-react-hooks": "^5.1.0-rc.0",
+        "eslint-plugin-prettier": "5.2.1",
+        "eslint-plugin-simple-import-sort": "12.1.1",
+        "cspell": "8.15.7",
+        "lint-staged": "15.2.10",
+        "prettier": "3.3.3",
+        "@commitlint/cli": "19.5.0",
+        "@commitlint/config-conventional": "19.5.0",
+        "commitizen": "4.3.1",
+        "fast-glob": "3.3.2",
+        "husky": "9.1.6",
+        "cz-git": "1.10.1",
+        "tsup": "8.3.5"
+    },
+    "bugs": {
+        "url": "https://github.com/Lxb905637031/lc-studio/issues"
+    },
+    "homepage": "https://github.com/Lxb905637031/lc-studio#readme"
+}
