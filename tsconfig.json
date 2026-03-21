@@ -1,45 +1,53 @@
-// TypeScript 编译器配置文件，用于指定编译选项和项目级别的设置
 {
-    "compilerOptions": {
-        // 关闭"始终使用严格模式"的自动注入，由开发者手动控制
-        "alwaysStrict": false,
-        // 生成 .d.ts 声明文件，方便库使用者获得类型提示
-        "declaration": true,
-        // 为声明文件同时生成 sourcemap，便于调试类型定义
-        "declarationMap": true,
-        // 降级迭代语法（如 for-of）以兼容旧运行时
-        "downlevelIteration": true,
-        // 使用 tslib 中的辅助函数以减小输出体积
-        "importHelpers": true,
-        // 将源代码内联进 sourcemap，方便调试时直接查看原始代码
-        "inlineSources": true,
-        // 强制每个文件作为独立模块编译，提升编译速度并避免全局作用域污染
-        "isolatedModules": true,
-        // 指定编译时包含的库，这里使用最新的 ESNext 标准库
-        "lib": ["ESNext"],
-        // 使用现代打包工具（如 Vite、Webpack）友好的模块解析策略
-        "moduleResolution": "bundler",
-        // 错误信息不被截断，方便查看完整提示
-        "noErrorTruncation": true,
-        // switch 语句中禁止遗漏 break/return，减少常见逻辑错误
-        "noFallthroughCasesInSwitch": true,
-        // 函数所有路径必须显式返回，避免隐式 undefined
-        "noImplicitReturns": true,
-        // 允许存在未使用的局部变量（开发时保留灵活性）
-        "noUnusedLocals": false,
-        // 允许存在未使用的参数（开发时保留灵活性）
-        "noUnusedParameters": false,
-        // 在 watch 模式下保留控制台输出，避免被清屏
-        "preserveWatchOutput": true,
-        // 生成 .js.map 文件，支持调试 TypeScript 源码
-        "sourceMap": true,
-        // 启用所有严格类型检查选项，最大化类型安全
-        "strict": true,
-        // 关闭对 bind/call/apply 的严格参数检查，保持灵活性
-        "strictBindCallApply": false,
-        // 目标输出为最新 ECMAScript 标准，充分利用现代语法
-        "target": "esnext",
-        // 索引访问（如 arr[i]）默认视为可能 undefined，强制显式判空
-        "noUncheckedIndexedAccess": true
+  "compilerOptions": {
+    // 是否始终使用严格模式
+    "alwaysStrict": false,
+    // 是否生成声明文件
+    "declaration": true,
+    // 是否为声明文件生成 source map
+    "declarationMap": true,
+    // 是否降级迭代器以兼容旧版本环境
+    "downlevelIteration": true,
+    // 是否从 tslib 导入辅助函数
+    "importHelpers": true,
+    // 是否在 source map 中内联源代码
+    "inlineSources": true,
+    // 是否确保每个文件可以独立编译（适用于 Babel 等工具）
+    "isolatedModules": true,
+    // 编译时包含的库文件
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    // 模块解析策略
+    "moduleResolution": "bundler",
+    // 是否禁用错误信息截断
+    "noErrorTruncation": true,
+    // 是否禁止 switch 语句中的 case 落空
+    "noFallthroughCasesInSwitch": true,
+    // 是否要求函数中所有代码路径都有返回值
+    "noImplicitReturns": true,
+    // 是否报告未使用的局部变量
+    "noUnusedLocals": false,
+    // 是否报告未使用的函数参数
+    "noUnusedParameters": false,
+    // 是否在监听模式下保留输出
+    "preserveWatchOutput": true,
+    // 是否生成 source map 文件
+    "sourceMap": true,
+    // 是否启用所有严格类型检查选项
+    "strict": true,
+    // 是否对 bind/call/apply 进行严格检查
+    "strictBindCallApply": false,
+    // 编译目标 JavaScript 版本
+    "target": "esnext",
+    // 是否对索引访问进行未定义检查
+    "noUncheckedIndexedAccess": true
+  },
+  // 项目引用配置，用于 monorepo 结构
+  "references": [
+    {
+      // 引用的子项目路径
+      "path": "./packages/layout-engine"
     }
+  ],
+  // 包含的文件列表，为空表示由引用的项目处理
+  "include": []
 }
