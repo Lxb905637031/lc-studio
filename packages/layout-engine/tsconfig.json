@@ -1,58 +1,29 @@
 {
-    "compilerOptions": {
-        // 编译目标
-        "target": "ES2020",
-        // 启用项目复合构建
-        "composite": true,
-        // 使用 ES 定义类字段
-        "useDefineForClassFields": true,
-        // 包含的库
-        "lib": ["ES2020", "DOM", "DOM.Iterable"],
-        // 模块系统
-        "module": "ESNext",
-        // 跳过声明文件的类型检查
-        "skipLibCheck": true,
-
-        // 模块解析策略
-        "moduleResolution": "bundler",
-        // 允许导入 JSON 模块
-        "resolveJsonModule": true,
-        // 每个文件作为独立模块处理
-        "isolatedModules": true,
-        // 允许输出文件
-        "noEmit": false,
-        // JSX 转换方式
-        "jsx": "react-jsx",
-        // JSX 导入源
-        "jsxImportSource": "react",
-
-        // 严格类型检查
-        "strict": true,
-        // 禁止未使用的局部变量
-        "noUnusedLocals": true,
-        // 禁止未使用的参数
-        "noUnusedParameters": true,
-        // 禁止 switch 语句中的 fallthrough
-        "noFallthroughCasesInSwitch": true,
-
-        // 模块解析基础路径
-        "baseUrl": ".",
-        // 路径别名映射
-        "paths": {
-            "@/*": ["src/*"]
-        },
-
-        // 生成声明文件
-        "declaration": true,
-        // 生成声明图映射文件
-        "declarationMap": true,
-        // 输出目录
-        "outDir": "dist",
-        // 源码根目录
-        "rootDir": "src"
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": false,
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
     },
-    // 包含的文件
-    "include": ["src/**/*.ts", "src/**/*.tsx"],
-    // 排除的文件
-    "exclude": ["node_modules", "build"]
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["node_modules", "build"]
 }
