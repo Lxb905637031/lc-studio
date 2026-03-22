@@ -1,10 +1,10 @@
 {
   "name": "@lc-studio/layout-engine",
   "version": "1.0.0",
-  "description": "",
+  "description": "A layout engine for canvas-based drag-and-drop interface with snapping, grid, and element management",
   "type": "module",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.mjs",
+  "main": "dist/cjs/index.cjs",
+  "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
   "scripts": {
     "build:watch": "tsup --watch",
