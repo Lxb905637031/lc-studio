@@ -27,15 +27,15 @@ interface LayoutCanvasProps {
   /** 是否显示吸附参考线 */
   showSnapGuides?: boolean
   /** 画布拖拽经过事件回调 */
-  canvasDragOver?: (e: DragEvent) => void
+  canvasDragOver?: (e: React.DragEvent) => void
   /** 画布拖放事件回调 */
-  canvasDrop?: (e: DragEvent) => void
+  canvasDrop?: (e: React.DragEvent) => void
   /** 画布滚轮事件回调 */
-  canvasWheel?: (e: WheelEvent) => void
+  canvasWheel?: (e: React.WheelEvent) => void
   /** 元素拖拽开始事件回调 */
-  dragStart?: (id: string, e: MouseEvent) => void
+  dragStart?: (id: string, e: React.MouseEvent) => void
   /** 元素调整大小开始事件回调 */
-  resizeStart?: (id: string, direction: ResizeDirection, e: MouseEvent) => void
+  resizeStart?: (id: string, direction: ResizeDirection, e: React.MouseEvent) => void
   /** 元素调整大小结束事件回调 */
   resizeEnd?: (id: string, direction: ResizeDirection, e: MouseEvent) => void
 }
@@ -72,8 +72,8 @@ const LayoutCanvas: React.FC<LayoutCanvasProps> = ({
    * 处理滚轮事件
    */
   const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault()
-    canvasWheel?.(e as unknown as WheelEvent)
+    // e.preventDefault()
+    canvasWheel?.(e)
   }
 
   /**
@@ -84,7 +84,7 @@ const LayoutCanvas: React.FC<LayoutCanvasProps> = ({
     if (e.dataTransfer) {
       e.dataTransfer.dropEffect = 'copy'
     }
-    canvasDragOver?.(e as unknown as DragEvent)
+    canvasDragOver?.(e)
   }
 
   /**
@@ -92,7 +92,7 @@ const LayoutCanvas: React.FC<LayoutCanvasProps> = ({
    */
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
-    canvasDrop?.(e as unknown as DragEvent)
+    canvasDrop?.(e)
   }
 
   /**
@@ -100,7 +100,7 @@ const LayoutCanvas: React.FC<LayoutCanvasProps> = ({
    */
   const handleElementDragStart = (e: React.MouseEvent, element: LayoutElement) => {
     e.preventDefault()
-    dragStart?.(element.id, e as unknown as MouseEvent)
+    dragStart?.(element.id, e)
   }
 
   /**
@@ -108,7 +108,7 @@ const LayoutCanvas: React.FC<LayoutCanvasProps> = ({
    */
   const handleResizeStart = (e: React.MouseEvent, element: LayoutElement, direction: ResizeDirection) => {
     e.preventDefault()
-    resizeStart?.(element.id, direction, e as unknown as MouseEvent)
+    resizeStart?.(element.id, direction, e)
   }
 
   /**
@@ -177,8 +177,18 @@ const LayoutCanvas: React.FC<LayoutCanvasProps> = ({
 
   return (
     <div ref={canvasContainerRef} style={containerStyle} onWheel={handleWheel} onDragOver={handleDragOver} onDrop={handleDrop}>
-      <div style={canvasWrapperStyle}>
-        <canvas ref={canvasRef} style={canvasStyle} />
+      <div style={{ ...canvasWrapperStyle, ...canvasStyle }}>
+        <canvas
+          ref={canvasRef}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+          }}
+        />
         {showSnapGuides && (
           <div
             style={{
@@ -210,6 +220,11 @@ const LayoutCanvas: React.FC<LayoutCanvasProps> = ({
         {elements.map(element => {
           const isSelected = element.id === selectedElementId
           const elementStyle = {
+            position: 'absolute' as const,
+            border: isSelected ? '1px solid #6366f1' : '1px solid transparent',
+            borderRadius: '4px',
+            cursor: 'move',
+            userSelect: 'none' as const,
             width: `${element.bounds.width}px`,
             height: `${element.bounds.height}px`,
             transform: `translate(${element.bounds.x}px, ${element.bounds.y}px)`,

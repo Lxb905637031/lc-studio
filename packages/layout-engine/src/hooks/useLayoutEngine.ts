@@ -33,13 +33,13 @@ export interface UseLayoutEngineReturn {
   updateElement: (elementId: string, updates: Partial<LayoutElement>) => void
 
   // 拖拽方法
-  startDrag: (elementId: string, event: MouseEvent) => void
-  startResize: (elementId: string, event: MouseEvent, direction: ResizeDirection) => void
+  startDrag: (elementId: string, event: React.MouseEvent) => void
+  startResize: (elementId: string, direction: ResizeDirection, event: React.MouseEvent) => void
   endResize: () => void
 
   // 画布方法
-  handleCanvasDrop: (event: DragEvent) => void
-  handleCanvasWheel: (event: WheelEvent) => void
+  handleCanvasDrop: (event: React.DragEvent) => void
+  handleCanvasWheel: (event: React.WheelEvent) => void
 
   // 工具方法
   getCanvasStyle: () => Record<string, string>
@@ -77,13 +77,13 @@ export function useLayoutEngine(options: UseLayoutEngineOptions): UseLayoutEngin
 
     document.addEventListener('mousemove', handleGlobalMouseMove)
     document.addEventListener('mouseup', handleGlobalMouseUp)
-    document.addEventListener('wheel', handleCanvasWheel)
+    document.addEventListener('wheel', handleCanvasWheelNative, { passive: false } as AddEventListenerOptions)
     document.addEventListener('mouseleave', handleGlobalMouseUp)
 
     return () => {
       document.removeEventListener('mousemove', handleGlobalMouseMove)
       document.removeEventListener('mouseup', handleGlobalMouseUp)
-      document.removeEventListener('wheel', handleCanvasWheel)
+      document.removeEventListener('wheel', handleCanvasWheelNative, { passive: false } as AddEventListenerOptions)
       document.removeEventListener('mouseleave', handleGlobalMouseUp)
     }
   }, [options.autoSetupEventListeners])
@@ -159,7 +159,7 @@ export function useLayoutEngine(options: UseLayoutEngineOptions): UseLayoutEngin
     }
   }
 
-  function startDrag(elementId: string, event: MouseEvent) {
+  function startDrag(elementId: string, event: React.MouseEvent) {
     if (event.target instanceof HTMLElement && event.target.classList.contains('resize-handle')) {
       return
     }
@@ -171,7 +171,7 @@ export function useLayoutEngine(options: UseLayoutEngineOptions): UseLayoutEngin
     setIsDragging(true)
   }
 
-  function startResize(elementId: string, event: MouseEvent, direction: ResizeDirection) {
+  function startResize(elementId: string, direction: ResizeDirection, event: React.MouseEvent) {
     event.stopPropagation()
     dragStartPosition = {
       x: event.clientX,
@@ -189,7 +189,7 @@ export function useLayoutEngine(options: UseLayoutEngineOptions): UseLayoutEngin
     setIsResizing(false)
   }
 
-  function handleCanvasDrop(event: DragEvent) {
+  function handleCanvasDrop(event: React.DragEvent) {
     event.preventDefault()
     if (!event.dataTransfer) {
       return
@@ -205,13 +205,21 @@ export function useLayoutEngine(options: UseLayoutEngineOptions): UseLayoutEngin
       type: event.dataTransfer.getData('text/plain') || event.dataTransfer.getData('char-type'),
       ...entries,
     }
-
     engine.handleCanvasDrop(position, data, scale)
   }
 
-  function handleCanvasWheel(event: WheelEvent) {
+  function handleCanvasWheel(event: React.WheelEvent) {
     if (event.ctrlKey || event.metaKey) {
-      event.preventDefault()
+      // event.preventDefault()
+      const delta = event.deltaY < 0 ? 0.1 : -0.1
+      const newScale = Math.max(0.1, Math.min(2, scale + delta))
+      setScale(Number(newScale.toFixed(2)))
+    }
+  }
+
+  function handleCanvasWheelNative(event: WheelEvent) {
+    if (event.ctrlKey || event.metaKey) {
+      // event.preventDefault()
       const delta = event.deltaY < 0 ? 0.1 : -0.1
       const newScale = Math.max(0.1, Math.min(2, scale + delta))
       setScale(Number(newScale.toFixed(2)))

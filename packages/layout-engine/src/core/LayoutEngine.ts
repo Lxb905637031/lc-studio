@@ -330,7 +330,11 @@ export class LayoutEngine {
     }
 
     this.snapManager.clearGuides()
-    const { elementId, bounds } = this.getSelectedElement()!
+    const selectedElement = this.getSelectedElement()
+    if (!selectedElement) {
+      return
+    }
+    const { elementId, bounds } = selectedElement
 
     if (elementId && bounds) {
       this.emit('element:move', elementId, bounds)
