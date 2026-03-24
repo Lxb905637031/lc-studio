@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { LayoutEngine } from '../core/LayoutEngine'
 import type { CanvasConfig, LayoutElement, LayoutEngineOptions, Position, ResizeDirection, SnapGuide } from '../types'
@@ -49,7 +49,11 @@ export interface UseLayoutEngineReturn {
 
 export function useLayoutEngine(options: UseLayoutEngineOptions): UseLayoutEngineReturn {
   // 创建引擎实例
-  const engine = new LayoutEngine(options)
+  const engineRef = useRef<LayoutEngine | null>(null)
+  if (!engineRef.current) {
+    engineRef.current = new LayoutEngine(options)
+  }
+  const engine = engineRef.current
 
   // 响应式状态
   const [elements, setElements] = useState<LayoutElement[]>([])
@@ -71,7 +75,7 @@ export function useLayoutEngine(options: UseLayoutEngineOptions): UseLayoutEngin
   }
 
   useEffect(() => {
-    if (options.autoSetupEventListeners) {
+    if (options.autoSetupEventListeners !== false) {
       setupEventListeners()
     }
 
@@ -194,7 +198,7 @@ export function useLayoutEngine(options: UseLayoutEngineOptions): UseLayoutEngin
     if (!event.dataTransfer) {
       return
     }
-    const canvasRect = (event.target as HTMLElement).getBoundingClientRect()
+    const canvasRect = (event.currentTarget as HTMLElement).getBoundingClientRect()
     const position = {
       x: event.clientX - canvasRect.left,
       y: event.clientY - canvasRect.top,
