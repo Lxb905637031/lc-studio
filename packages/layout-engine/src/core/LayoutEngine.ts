@@ -198,7 +198,7 @@ export class LayoutEngine {
     if (!element) {
       return
     }
-    this.emit('element:resize', element.id, element.bounds)
+    this.emit('element:resizeEnd', element.id, element.bounds)
   }
 
   /**
@@ -207,7 +207,7 @@ export class LayoutEngine {
    * @param scale 画布缩放比例
    */
   updateDrag(currentPosition: Position, scale: number = 1) {
-    if (!this.dragState.isDragging) {
+    if (!this.dragState.isDragging && !this.dragState.isResizing) {
       return
     }
     const element = this.getSelectedElement()
@@ -217,7 +217,6 @@ export class LayoutEngine {
 
     const deltaX = (currentPosition.x - this.dragState.dragStartPosition!.x) * scale
     const deltaY = (currentPosition.y - this.dragState.dragStartPosition!.y) * scale
-
     if (this.dragState.isResizing) {
       this.handleResizeMove(element, deltaX, deltaY)
     } else if (this.dragState.isDragging) {
@@ -272,7 +271,6 @@ export class LayoutEngine {
     const direction = this.dragState.resizeDirection!
     const startBounds = this.dragState.elementStartBounds!
     const newBounds = { ...startBounds }
-
     switch (direction) {
       case 'e':
         newBounds.width = Math.max(this.minElementSize.width, startBounds.width + deltaX)

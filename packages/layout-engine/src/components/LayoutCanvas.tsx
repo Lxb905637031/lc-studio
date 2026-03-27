@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import { GridManager } from '../core/GridManager'
 import type { CanvasConfig, LayoutElement, ResizeDirection } from '../types'
@@ -62,11 +62,29 @@ const LayoutCanvas: React.FC<LayoutCanvasProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const canvasContainerRef = useRef<HTMLDivElement>(null)
+  const [isResizing, setIsResizing] = useState(false)
+  const [currentResize, setCurrentResize] = useState<{ elementId: string; direction: ResizeDirection } | null>(null)
 
   const girdManager = new GridManager({
     size: canvasConfig.gridSize || 20,
     show: showGrid,
   })
+
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      if (isResizing && currentResize) {
+        const { elementId, direction } = currentResize
+        setIsResizing(false)
+        setCurrentResize(null)
+        resizeEnd?.(elementId, direction, new MouseEvent('mouseup'))
+      }
+    }
+
+    document.addEventListener('mouseup', handleGlobalMouseUp)
+    return () => {
+      document.removeEventListener('mouseup', handleGlobalMouseUp)
+    }
+  }, [isResizing, currentResize])
 
   /**
    * 处理滚轮事件
@@ -108,6 +126,8 @@ const LayoutCanvas: React.FC<LayoutCanvasProps> = ({
    */
   const handleResizeStart = (e: React.MouseEvent, element: LayoutElement, direction: ResizeDirection) => {
     e.preventDefault()
+    setCurrentResize({ elementId: element.id, direction })
+    setIsResizing(true)
     resizeStart?.(element.id, direction, e)
   }
 
@@ -116,6 +136,8 @@ const LayoutCanvas: React.FC<LayoutCanvasProps> = ({
    */
   const handleResizeEnd = (e: React.MouseEvent, element: LayoutElement, direction: ResizeDirection) => {
     e.preventDefault()
+    setCurrentResize(null)
+    setIsResizing(false)
     resizeEnd?.(element.id, direction, e as unknown as MouseEvent)
   }
 
