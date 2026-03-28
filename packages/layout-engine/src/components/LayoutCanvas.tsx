@@ -38,6 +38,8 @@ interface LayoutCanvasProps {
   resizeStart?: (id: string, direction: ResizeDirection, e: React.MouseEvent) => void
   /** 元素调整大小结束事件回调 */
   resizeEnd?: (id: string, direction: ResizeDirection, e: MouseEvent) => void
+  /** 渲染元素内容 */
+  renderElement?: (element: LayoutElement) => React.ReactNode
 }
 
 /**
@@ -59,6 +61,7 @@ const LayoutCanvas: React.FC<LayoutCanvasProps> = ({
   dragStart,
   resizeStart,
   resizeEnd,
+  renderElement,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const canvasContainerRef = useRef<HTMLDivElement>(null)
@@ -253,23 +256,33 @@ const LayoutCanvas: React.FC<LayoutCanvasProps> = ({
             ...(isSelected ? { boxShadow: '0 0 0 2px rgba(99,102,241,0.2)' } : {}),
           }
 
-          const onMouseDown = (e: React.MouseEvent) => handleElementDragStart(e, element)
+          const onMouseDown = (e: React.MouseEvent) => {
+            // 检查点击目标是否是可编辑元素
+            const isEditable = e.target instanceof HTMLElement && e.target.isContentEditable
+            if (!isEditable) {
+              handleElementDragStart(e, element)
+            }
+          }
           return (
             <div key={element.id} style={elementStyle} onMouseDown={onMouseDown}>
-              <div
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#4b5563',
-                  fontSize: '14px',
-                  backgroundColor: '#f9fafb',
-                }}
-              >
-                {element.type}
-              </div>
+              {renderElement ? (
+                renderElement(element)
+              ) : (
+                <div
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#4b5563',
+                    fontSize: '14px',
+                    backgroundColor: '#f9fafb',
+                  }}
+                >
+                  {element.type}
+                </div>
+              )}
               {isSelected && (
                 <div
                   style={{
