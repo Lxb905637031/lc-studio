@@ -40,8 +40,6 @@ const fontEndConfig = {
   rules: {
     ...reactHooks.configs.recommended.rules, // 合并官方推荐规则
     'react-refresh/only-export-components': ['warn', { allowConstantExport: true }], // 限制仅导出组件
-    'react-hooks/incompatible-library': ['warn', { libraryName: 'react' }], // 检测不兼容的库
-    'react-hooks/static-components': ['warn', { libraryName: 'react' }], // 检测静态组件
     'no-console': 'error', // 禁止使用 console
   },
 }
