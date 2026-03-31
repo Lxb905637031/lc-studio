@@ -148,7 +148,7 @@ function App() {
   })
 
   // 监听移动事件
-  engine.on('element:move', (elementId, bounds) => {
+  engine.on('element:moveEnd', (elementId, bounds) => {
     const element = elements.find(e => e.id === elementId)
     if (element && startMoveBounds) {
       const before = { ...element, bounds: { ...startMoveBounds } }
