@@ -1,8 +1,10 @@
 import './App.css'
 
-import type { LayoutElement } from '@lc-studio/layout-engine'
+import { useHistoryManager } from '@lc-studio/editor-history'
+import type { Bounds, LayoutElement } from '@lc-studio/layout-engine'
 import { LayoutCanvas, useLayoutEngine } from '@lc-studio/layout-engine'
 import type { CSSProperties } from 'react'
+import { useState } from 'react'
 
 // 定义元素数据类型
 interface ElementData {
@@ -68,38 +70,6 @@ const materials: Material[] = [
       },
     },
   },
-  // {
-  //   id: 'input',
-  //   name: '输入框',
-  //   type: 'Input',
-  //   defaultWidth: 200,
-  //   defaultHeight: 40,
-  //   data: {
-  //     text: '输入框',
-  //     style: {
-  //       fontSize: 14,
-  //       textAlign: 'left' as const,
-  //       color: '#000000',
-  //       backgroundColor: '#ffffff'
-  //     }
-  //   }
-  // },
-  // {
-  //   id: 'container',
-  //   name: '容器',
-  //   type: 'Container',
-  //   defaultWidth: 300,
-  //   defaultHeight: 200,
-  //   data: {
-  //     text: '容器',
-  //     style: {
-  //       fontSize: 14,
-  //       textAlign: 'center' as const,
-  //       color: '#000000',
-  //       backgroundColor: '#f9f9f9'
-  //     }
-  //   }
-  // },
 ]
 
 let elementIdCounter = 0
@@ -121,6 +91,7 @@ function App() {
     addElement,
     selectElement,
     updateElement,
+    removeElement,
   } = useLayoutEngine({
     canvas: {
       width: 800,
@@ -133,8 +104,14 @@ function App() {
     snapThreshold: 5,
     showSnapGuides: true,
     enableGridSnap: false,
-    minElementSize: { width: 100, height: 100 },
+    minElementSize: { width: 100, height: 40 },
   })
+
+  // 初始化历史管理器
+  const { canUndo, canRedo, recordAddElement, undo, redo, recordUpdateElement, recordDeleteElement } = useHistoryManager()
+
+  const [startResizeBounds, setStartResizeBounds] = useState<null | Bounds>(null)
+  const [startMoveBounds, setStartMoveBounds] = useState<null | Bounds>(null)
 
   engine.on('canvas:drop', (position, data) => {
     if (data && data.material) {
@@ -160,20 +137,43 @@ function App() {
         },
       }
       addElement(newElement)
+      recordAddElement(newElement.id, newElement)
       selectElement(newElement.id)
     }
   })
 
+  // 监听移动开始事件
+  engine.on('element:moveStart', (_, bounds) => {
+    setStartMoveBounds({ ...bounds })
+  })
+
+  // 监听移动事件
+  engine.on('element:move', (elementId, bounds) => {
+    const element = elements.find(e => e.id === elementId)
+    if (element && startMoveBounds) {
+      const before = { ...element, bounds: { ...startMoveBounds } }
+      const after = { ...element, bounds: { ...bounds } }
+      recordUpdateElement(elementId, before, after)
+    }
+    setStartMoveBounds(null)
+  })
+
+  // 监听调整大小开始事件
+  engine.on('element:resizeStart', (_, bounds) => {
+    setStartResizeBounds(bounds)
+  })
+
+  // 监听调整大小结束事件
   engine.on('element:resizeEnd', (elementId, bounds) => {
     updateElement(elementId, { ...bounds })
+    const element = elements.find(e => e.id === elementId)
+    if (element) {
+      recordUpdateElement(elementId, { ...element, bounds: startResizeBounds }, { ...element, bounds })
+    }
+    setStartResizeBounds(null)
   })
 
   const renderElement = (element: LayoutElement) => {
-    // return (
-    //   <div key={element.id} style={elementStyle} onMouseDown={onMouseDown}>
-    //     {element.type}
-    //   </div>
-    // )
     const { type, bounds, data } = element
     const { text, style, imageUrl } = data || {}
     switch (type) {
@@ -239,6 +239,90 @@ function App() {
       <div className="editor-panel">
         <div className="editor-header">
           <h3>编辑区</h3>
+          <div className="editor-controls">
+            <button
+              onClick={() => {
+                const entry = undo()
+                if (entry) {
+                  // 根据操作类型执行相应的撤销操作
+                  switch (entry.action) {
+                    case 'add':
+                      // 撤销添加元素操作，删除元素
+                      if (entry.elementId) {
+                        removeElement(entry.elementId)
+                        selectElement(null)
+                      }
+                      break
+                    case 'update':
+                      // 撤销更新元素操作，恢复到之前的状态
+                      if (entry.elementId && entry.before) {
+                        // 只更新变化的部分
+                        updateElement(entry.elementId, entry.before)
+                      }
+                      break
+                    case 'delete':
+                      // 撤销删除元素操作，恢复元素
+                      if (entry.elementId && entry.before) {
+                        addElement(entry.before)
+                        selectElement(entry.elementId)
+                      }
+                      break
+                  }
+                }
+              }}
+              disabled={!canUndo}
+            >
+              撤销
+            </button>
+            <button
+              onClick={() => {
+                const entry = redo()
+                if (entry) {
+                  // 根据操作类型执行相应的重做操作ß
+                  switch (entry.action) {
+                    case 'update':
+                      // 重做更新元素操作，恢复到之后的状态
+                      if (entry.elementId && entry.after) {
+                        updateElement(entry.elementId, { bounds: entry.after })
+                      }
+                      break
+                    case 'add':
+                      // 重做添加元素操作，添加元素
+                      if (entry.elementId && entry.after) {
+                        addElement(entry.after)
+                        selectElement(entry.elementId)
+                      }
+                      break
+                    case 'delete':
+                      // 重做删除元素操作，删除元素
+                      if (entry.elementId) {
+                        removeElement(entry.elementId)
+                        selectElement(null)
+                      }
+                      break
+                  }
+                }
+              }}
+              disabled={!canRedo}
+            >
+              重做
+            </button>
+            <button
+              onClick={() => {
+                if (selectedElementId) {
+                  const element = elements.find(e => e.id === selectedElementId)
+                  if (element) {
+                    recordDeleteElement(selectedElementId, element)
+                    removeElement(selectedElementId)
+                    selectElement(null)
+                  }
+                }
+              }}
+              disabled={!selectedElementId}
+            >
+              删除元素
+            </button>
+          </div>
         </div>
         <div className="canvas-container">
           <LayoutCanvas
@@ -272,7 +356,13 @@ function App() {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   const element = elements.find(el => el.id === selectedElementId)
                   if (element) {
-                    updateElement(selectedElementId, { bounds: { ...element.bounds, x: parseFloat(e.target.value) || 0 } })
+                    const before = { ...element }
+                    const after = {
+                      ...element,
+                      bounds: { ...element.bounds, x: parseFloat(e.target.value) || 0 },
+                    }
+                    updateElement(selectedElementId, { bounds: after.bounds })
+                    recordUpdateElement(selectedElementId, before, after)
                   }
                 }}
               />
@@ -285,7 +375,13 @@ function App() {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   const element = elements.find(el => el.id === selectedElementId)
                   if (element) {
-                    updateElement(selectedElementId, { bounds: { ...element.bounds, y: parseFloat(e.target.value) || 0 } })
+                    const before = { ...element }
+                    const after = {
+                      ...element,
+                      bounds: { ...element.bounds, y: parseFloat(e.target.value) || 0 },
+                    }
+                    updateElement(selectedElementId, { bounds: after.bounds })
+                    recordUpdateElement(selectedElementId, before, after)
                   }
                 }}
               />
@@ -298,7 +394,13 @@ function App() {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   const element = elements.find(el => el.id === selectedElementId)
                   if (element) {
-                    updateElement(selectedElementId, { bounds: { ...element.bounds, width: parseFloat(e.target.value) || 0 } })
+                    const before = { ...element }
+                    const after = {
+                      ...element,
+                      bounds: { ...element.bounds, width: parseFloat(e.target.value) || 0 },
+                    }
+                    updateElement(selectedElementId, { bounds: after.bounds })
+                    recordUpdateElement(selectedElementId, before, after)
                   }
                 }}
               />
@@ -311,7 +413,13 @@ function App() {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   const element = elements.find(el => el.id === selectedElementId)
                   if (element) {
-                    updateElement(selectedElementId, { bounds: { ...element.bounds, height: parseFloat(e.target.value) || 0 } })
+                    const before = { ...element }
+                    const after = {
+                      ...element,
+                      bounds: { ...element.bounds, height: parseFloat(e.target.value) || 0 },
+                    }
+                    updateElement(selectedElementId, { bounds: after.bounds })
+                    recordUpdateElement(selectedElementId, before, after)
                   }
                 }}
               />
@@ -333,12 +441,18 @@ function App() {
                         type="text"
                         value={element.data?.text || ''}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                          updateElement(selectedElementId, {
+                          const before = { ...element }
+                          const after = {
+                            ...element,
                             data: {
                               ...element.data,
                               text: e.target.value,
                             },
+                          }
+                          updateElement(selectedElementId, {
+                            data: after.data,
                           })
+                          recordUpdateElement(selectedElementId, before, after)
                         }}
                       />
                     </div>
@@ -348,7 +462,9 @@ function App() {
                         type="number"
                         value={element.data?.style?.fontSize || 14}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                          updateElement(selectedElementId, {
+                          const before = { ...element }
+                          const after = {
+                            ...element,
                             data: {
                               ...element.data,
                               style: {
@@ -356,7 +472,11 @@ function App() {
                                 fontSize: parseInt(e.target.value) || 14,
                               },
                             },
+                          }
+                          updateElement(selectedElementId, {
+                            data: after.data,
                           })
+                          recordUpdateElement(selectedElementId, before, after)
                         }}
                       />
                     </div>
@@ -365,7 +485,9 @@ function App() {
                       <select
                         value={element.data?.style?.textAlign || 'center'}
                         onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                          updateElement(selectedElementId, {
+                          const before = { ...element }
+                          const after = {
+                            ...element,
                             data: {
                               ...element.data,
                               style: {
@@ -373,7 +495,11 @@ function App() {
                                 textAlign: e.target.value as 'left' | 'center' | 'right',
                               },
                             },
+                          }
+                          updateElement(selectedElementId, {
+                            data: after.data,
                           })
+                          recordUpdateElement(selectedElementId, before, after)
                         }}
                       >
                         <option value="left">左对齐</option>
@@ -387,7 +513,9 @@ function App() {
                         type="color"
                         value={element.data?.style?.color || '#000000'}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                          updateElement(selectedElementId, {
+                          const before = { ...element }
+                          const after = {
+                            ...element,
                             data: {
                               ...element.data,
                               style: {
@@ -395,7 +523,11 @@ function App() {
                                 color: e.target.value,
                               },
                             },
+                          }
+                          updateElement(selectedElementId, {
+                            data: after.data,
                           })
+                          recordUpdateElement(selectedElementId, before, after)
                         }}
                       />
                     </div>
@@ -405,7 +537,9 @@ function App() {
                         type="color"
                         value={element.data?.style?.backgroundColor || '#ffffff'}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                          updateElement(selectedElementId, {
+                          const before = { ...element }
+                          const after = {
+                            ...element,
                             data: {
                               ...element.data,
                               style: {
@@ -413,7 +547,11 @@ function App() {
                                 backgroundColor: e.target.value,
                               },
                             },
+                          }
+                          updateElement(selectedElementId, {
+                            data: after.data,
                           })
+                          recordUpdateElement(selectedElementId, before, after)
                         }}
                       />
                     </div>
@@ -431,12 +569,18 @@ function App() {
                         type="text"
                         value={element.data?.imageUrl || ''}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                          updateElement(selectedElementId, {
+                          const before = { ...element }
+                          const after = {
+                            ...element,
                             data: {
                               ...element.data,
                               imageUrl: e.target.value,
                             },
+                          }
+                          updateElement(selectedElementId, {
+                            data: after.data,
                           })
+                          recordUpdateElement(selectedElementId, before, after)
                         }}
                       />
                     </div>
@@ -452,12 +596,18 @@ function App() {
                               const reader = new FileReader()
                               reader.onload = event => {
                                 const imageUrl = event.target?.result as string
-                                updateElement(selectedElementId, {
+                                const before = { ...element }
+                                const after = {
+                                  ...element,
                                   data: {
                                     ...element.data,
                                     imageUrl,
                                   },
+                                }
+                                updateElement(selectedElementId, {
+                                  data: after.data,
                                 })
+                                recordUpdateElement(selectedElementId, before, after)
                               }
                               reader.readAsDataURL(file)
                             }

@@ -130,18 +130,23 @@
 }
 
 .editor-controls button {
-  width: 32px;
+  padding: 6px 12px;
   height: 32px;
   border: 1px solid #d1d5db;
   background-color: #ffffff;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 14px;
+  font-weight: 500;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+}
+
+.editor-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .editor-controls button:hover {

@@ -74,6 +74,9 @@ importers:
 
   apps/frontend/lc-editor:
     dependencies:
+      '@lc-studio/editor-history':
+        specifier: workspace:*
+        version: link:../../../packages/editor-history
       '@lc-studio/layout-engine':
         specifier: workspace:*
         version: link:../../../packages/layout-engine
@@ -121,7 +124,15 @@ importers:
         specifier: ^8.0.1
         version: 8.0.1(@types/node@24.12.0)(esbuild@0.24.2)(jiti@2.6.1)(yaml@2.8.2)
 
-  packages/editor-history: {}
+  packages/editor-history:
+    dependencies:
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.14
+        version: 19.2.14
 
   packages/layout-engine:
     dependencies:
