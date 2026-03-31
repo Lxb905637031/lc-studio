@@ -335,10 +335,11 @@ export class LayoutEngine {
     if (!selectedElement) {
       return
     }
-    const { elementId, bounds } = selectedElement
 
-    if (elementId && bounds) {
-      this.emit('element:move', elementId, bounds)
+    const { id, bounds } = selectedElement
+
+    if (id && bounds) {
+      this.emit('element:moveEnd', id, bounds)
     }
   }
 
