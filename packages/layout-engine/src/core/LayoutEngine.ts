@@ -165,6 +165,7 @@ export class LayoutEngine {
         ...element.bounds,
       },
     }
+    this.emit('element:moveStart', element.id, element.bounds)
   }
 
   /**
@@ -188,6 +189,7 @@ export class LayoutEngine {
       },
       resizeDirection: direction,
     }
+    this.emit('element:resizeStart', element.id, element.bounds)
   }
 
   /**
@@ -207,11 +209,12 @@ export class LayoutEngine {
    * @param scale 画布缩放比例
    */
   updateDrag(currentPosition: Position, scale: number = 1) {
-    if (!this.dragState.isDragging && !this.dragState.isResizing) {
-      return
-    }
     const element = this.getSelectedElement()
     if (!element) {
+      return
+    }
+
+    if (!this.dragState.isDragging && !this.dragState.isResizing) {
       return
     }
 

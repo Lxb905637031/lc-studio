@@ -119,10 +119,14 @@ export interface LayoutEngineEvents {
   'element:deselect': (elementId: string | null) => void
   /** 元素移动中，持续触发 */
   'element:move': (elementId: string, bounds: Bounds) => void
+  /** 元素移动开始，拖拽开始时触发一次 */
+  'element:moveStart': (elementId: string, bounds: Bounds) => void
   /** 元素移动结束，拖拽松开时触发一次 */
   'element:moveEnd': (elementId: string, bounds: Bounds) => void
   /** 元素调整大小中，持续触发 */
   'element:resize': (elementId: string, bounds: Bounds) => void
+  /** 元素调整大小开始，拖拽开始时触发一次 */
+  'element:resizeStart': (elementId: string, bounds: Bounds) => void
   /** 元素调整大小结束，松开时触发一次 */
   'element:resizeEnd': (elementId: string, bounds: Bounds) => void
   /** 新增元素到画布 */
