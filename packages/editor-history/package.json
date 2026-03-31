@@ -1,0 +1,22 @@
+{
+  "name": "@lc-studio/editor-history",
+  "version": "1.0.0",
+  "description": "编辑器历史记录管理功能",
+  "type": "module",
+  "main": "dist/cjs/index.cjs",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
+  "scripts": {
+    "build:watch": "tsup --watch",
+    "build": "tsup",
+    "clean": "rimraf dist"
+  },
+  "author": "",
+  "license": "ISC",
+  "peerDependencies": {
+    "react": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14"
+  }
+}
